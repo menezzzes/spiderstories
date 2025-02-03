@@ -13,7 +13,7 @@ Welcome to **Spider-Stories**, a fun web app that fetches **random Spider-Man st
 ## 🛠️ Installation
 ### **1. Clone the repository**
 ```sh
- git clone https://github.com/yourusername/spider-stories.git
+ git clone https://github.com/menezzzes/spiderstories.git
 ```
 
 ### **2. Navigate into the project directory**
