@@ -48,7 +48,7 @@ To fetch data from the Marvel API, you need a **Marvel Developer API Key**.
 - Create an account and get your **Public & Private API Keys**.
 
 ### **2. Set up environment variables**
-Create a **`.env`** file in the project root and add:
+Update the **`.env`** file in the project and add:
 ```sh
 VITE_PUBLIC_KEY=your_public_api_key
 VITE_PRIVATE_KEY=your_private_api_key
