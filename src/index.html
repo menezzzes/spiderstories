@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6e4PLmHJ6sydVinDL6P3iS0aV-3yDJkj2wg&s">
+  <meta name="description" content="Discover random Spider-Man stories with characters, directly from the Marvel API!">
+  <title>Spider-Stories</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+  <div id="content">
+    <header>
+      <h1>Spider-Stories</h1>
+    </header>
+
+    <section aria-labelledby="story-title">
+      <p id="page-bio"> Discover a collection of Spider-Man stories from the Marvel catalog, powered by the Marvel API. Start exploring now!</p>
+      <button id="btn" aria-label="discover random Spider-Man stories">Go!</button>
+    </section>
+
+    <div id="loading">
+      <div class="spinner"></div>
+    </div>
+
+    <section id="story-description" aria-labelledby="about-story">
+    </section>
+
+    <section aria-labelledby="characters-title">
+      <ul id="characters-list"></ul>
+    </section>
+
+    <footer id="attribution">
+      <p>Data provided by Marvel. © 2025 MARVEL</p>
+    </footer>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+
+</body>
+</html>
