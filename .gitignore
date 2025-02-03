@@ -25,5 +25,8 @@ dist-ssr
 
 # Ignore .env file
 
+<<<<<<< HEAD
 .env
+=======
+>>>>>>> 6633cfcad79a62761e356454e0a4a3c570638545
 /src/.env
