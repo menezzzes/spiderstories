@@ -12,6 +12,7 @@
     "vite": "^6.0.5"
   },
   "dependencies": {
-    "crypto-js": "^4.2.0"
+    "crypto-js": "^4.2.0",
+    "node-fetch": "^3.3.2"
   }
 }
