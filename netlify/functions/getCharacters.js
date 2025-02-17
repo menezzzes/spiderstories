@@ -1,33 +1,44 @@
-exports.handler = async function (event) {
+import fetch from 'isomorphic-fetch';  // Use isomorphic-fetch
+import CryptoJS from 'crypto-js';
+
+export const handler = async (event) => {
   try {
-    const { charactersUrl } = JSON.parse(event.body);
-    if (!charactersUrl) throw new Error("No character URL provided.");
+    const { characterIds } = JSON.parse(event.body);
+    if (!characterIds) throw new Error("No character IDs provided.");
 
-    const fetch = (...args) =>
-      import('node-fetch').then(({ default: fetch }) => fetch(...args));
-
-    const CryptoJS = await import('crypto-js');
-
-    const apikey = process.env.VITE_PUBLIC_KEY;
-    const privateKey = process.env.VITE_PRIVATE_KEY;
+    const apikey = process.env.PUBLIC_KEY;
+    const privateKey = process.env.PRIVATE_KEY;
     const timestamp = Date.now().toString();
     const hash = CryptoJS.MD5(timestamp + privateKey + apikey).toString();
 
-    const response = await fetch(`${charactersUrl}?apikey=${apikey}&ts=${timestamp}&hash=${hash}`);
+    const fetchPromises = characterIds.map(async (characterId) => {
+      try {
+        const response = await fetch(
+          `https://gateway.marvel.com/v1/public/characters/${characterId}/stories?apikey=${apikey}&ts=${timestamp}&hash=${hash}`
+        );
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Marvel API error: ${response.status} - ${errorText}`);
+        }
+        return await response.json();
+      } catch (innerError) {
+        console.error("Error fetching story for character", characterId, innerError);
+        return { data: { results: [] } };
+      }
+    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Marvel API error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
+    const responses = await Promise.all(fetchPromises);
+    let allStories = responses.flatMap((res) => res.data.results);
+    let validStories = allStories.filter(
+      (story) => story.description && story.description.trim() !== ""
+    );
 
     return {
       statusCode: 200,
-      body: JSON.stringify(data.data.results),
+      body: JSON.stringify(validStories),
     };
   } catch (error) {
-    console.error("Error in character fetch:", error);
+    console.error("Main function error:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message }),
