@@ -4,6 +4,55 @@ const characterIds = ["1009610", "1016181", "1017603"]; // Spider-Man IDs
 const storyDescriptionElement = document.getElementById('story-description');
 const charactersList = document.getElementById('characters-list');
 
+// 📌 INSERT handleError() FUNCTION HERE
+function handleError(error) {
+  const errorContainer = document.getElementById("error-message");
+
+  if (!errorContainer) {
+    console.error("Error: No error container found in the HTML.");
+    return;
+  }
+
+  errorContainer.innerHTML = "";
+  errorContainer.style.display = "block";
+  errorContainer.style.backgroundColor = "red";
+  errorContainer.style.color = "white";
+  errorContainer.style.padding = "10px";
+  errorContainer.style.margin = "10px 0";
+  errorContainer.style.borderRadius = "5px";
+  errorContainer.style.textAlign = "center";
+
+  let errorMessage = "Something went wrong. Please try again.";
+
+  if (error instanceof TypeError && error.message.includes("fetch")) {
+    errorMessage = "Network error: Please check your internet connection.";
+  } else if (error.message.includes("HTTP error")) {
+    errorMessage = `Marvel API Error: ${error.message}`;
+  } else {
+    errorMessage = "Unexpected error: " + error.message;
+  }
+
+  // Display the error message
+  errorContainer.innerHTML = `<p>${errorMessage}</p>`;
+
+  // Add a retry button
+  const retryButton = document.createElement("button");
+  retryButton.innerText = "Retry";
+  retryButton.style.marginTop = "10px";
+  retryButton.style.padding = "8px 15px";
+  retryButton.style.border = "none";
+  retryButton.style.backgroundColor = "yellow";
+  retryButton.style.color = "black";
+  retryButton.style.cursor = "pointer";
+  retryButton.style.fontWeight = "bold";
+  retryButton.onclick = () => {
+    errorContainer.style.display = "none";
+    fetchRandomStory(); // Retry fetching a new story
+  };
+
+  errorContainer.appendChild(retryButton);
+}
+
 function showLoading() {
   document.getElementById('loading').classList.add('show-loading');
   document.getElementById('content').classList.remove('content-visible'); 
@@ -35,8 +84,7 @@ async function fetchRandomStory() {
     const randomStory = validStories[Math.floor(Math.random() * validStories.length)];
     displayStory(randomStory);
   } catch (error) {
-    console.error('Error fetching random story:', error);
-    storyDescriptionElement.innerHTML = `<p style="color: red;">Failed to load a valid story. Please try again.</p>`;
+    handleError(error);
   } finally {
     hideLoading();
   }
@@ -88,7 +136,7 @@ async function fetchCharacters(charactersUrl) {
 
     lazyLoadImages();
   } catch (error) {
-    console.error('Error fetching characters:', error);
+    handleError(error);
   }
 }
 
