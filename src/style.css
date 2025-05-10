@@ -20,10 +20,6 @@ body {
   transition: opacity 0.5s ease-in-out; /* Smooth transition */
 }
 
-.content-visible {
-  display: block; /* Shown using display: block */
-  opacity: 1; /* Opacity 1 when visible */
-}
 
 h1 {
   font-family: 'Bangers', cursive;

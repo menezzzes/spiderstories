@@ -1,16 +1,57 @@
-import CryptoJS from 'crypto-js';
-
-const apikey = import.meta.env.VITE_PUBLIC_KEY;
-const privateKey = import.meta.env.VITE_PRIVATE_KEY;
-const timestamp = Date.now().toString();
-const hash = CryptoJS.MD5(timestamp + privateKey + apikey).toString();
-
-//spider-man IDs (there are multiple spider-men codes)
-const characterIds = ["1009610", "1016181", "1017603"]; // Peter Parker, Miles Morales, Spider-Gwen
+const apikey = import.meta.env.VITE_PUBLIC_KEY; // Only public key is exposed
+const characterIds = ["1009610", "1016181", "1017603"]; // Spider-Man IDs
 
 const storyDescriptionElement = document.getElementById('story-description');
 const charactersList = document.getElementById('characters-list');
 
+// 📌 INSERT handleError() FUNCTION HERE
+function handleError(error) {
+  const errorContainer = document.getElementById("error-message");
+
+  if (!errorContainer) {
+    console.error("Error: No error container found in the HTML.");
+    return;
+  }
+
+  errorContainer.innerHTML = "";
+  errorContainer.style.display = "block";
+  errorContainer.style.backgroundColor = "red";
+  errorContainer.style.color = "white";
+  errorContainer.style.padding = "10px";
+  errorContainer.style.margin = "10px 0";
+  errorContainer.style.borderRadius = "5px";
+  errorContainer.style.textAlign = "center";
+
+  let errorMessage = "Something went wrong. Please try again.";
+
+  if (error instanceof TypeError && error.message.includes("fetch")) {
+    errorMessage = "Network error: Please check your internet connection.";
+  } else if (error.message.includes("HTTP error")) {
+    errorMessage = `Marvel API Error: ${error.message}`;
+  } else {
+    errorMessage = "Unexpected error: " + error.message;
+  }
+
+  // Display the error message
+  errorContainer.innerHTML = `<p>${errorMessage}</p>`;
+
+  // Add a retry button
+  const retryButton = document.createElement("button");
+  retryButton.innerText = "Retry";
+  retryButton.style.marginTop = "10px";
+  retryButton.style.padding = "8px 15px";
+  retryButton.style.border = "none";
+  retryButton.style.backgroundColor = "yellow";
+  retryButton.style.color = "black";
+  retryButton.style.cursor = "pointer";
+  retryButton.style.fontWeight = "bold";
+  retryButton.onclick = () => {
+    errorContainer.style.display = "none";
+    fetchRandomStory(); // Retry fetching a new story
+  };
+
+  errorContainer.appendChild(retryButton);
+}
 
 function showLoading() {
   document.getElementById('loading').classList.add('show-loading');
@@ -22,35 +63,28 @@ function hideLoading() {
   document.getElementById('content').classList.add('content-visible'); 
 }
 
-
-// this function fetches all stories in parallel and pick a random one with a description
 async function fetchRandomStory() {
   try {
     showLoading();
     storyDescriptionElement.innerHTML = '';
     charactersList.innerHTML = '';
 
-    const fetchPromises = characterIds.map(characterId =>
-      fetch(`https://gateway.marvel.com/v1/public/characters/${characterId}/stories?apikey=${apikey}&ts=${timestamp}&hash=${hash}`)
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.json();
-        })
-    );
+    // Call the secure Netlify function instead of Marvel API directly
+    const response = await fetch("/.netlify/functions/getStories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ characterIds })
+    });
 
-    const responses = await Promise.all(fetchPromises);
-    let allStories = responses.flatMap(response => response.data.results);
-    let validStories = allStories.filter(story => story.description && story.description.trim() !== '');
-
-    if (validStories.length === 0) {
-      throw new Error('No stories with descriptions found.');
-    }
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    
+    const validStories = await response.json();
+    if (validStories.length === 0) throw new Error('No stories with descriptions found.');
 
     const randomStory = validStories[Math.floor(Math.random() * validStories.length)];
     displayStory(randomStory);
   } catch (error) {
-    console.error('Error fetching random story:', error);
-    storyDescriptionElement.innerHTML = `<p style="color: red;">Failed to load a valid story. Please try again.</p>`;
+    handleError(error);
   } finally {
     hideLoading();
   }
@@ -62,24 +96,26 @@ function displayStory(story) {
     <p>${story.description}</p>
   `;
 
-  
   fetchCharacters(story.characters.collectionURI);
 }
 
 async function fetchCharacters(charactersUrl) {
   try {
-    const urlWithAuth = `${charactersUrl}?apikey=${apikey}&ts=${timestamp}&hash=${hash}`;
-    const charactersResponse = await fetch(urlWithAuth);
-    if (!charactersResponse.ok) throw new Error(`HTTP error! Status: ${charactersResponse.status}`);
+    // Call the backend function for characters instead of Marvel API directly
+    const response = await fetch("/.netlify/functions/getCharacters", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ charactersUrl })
+    });
 
-    const charactersData = await charactersResponse.json();
-    const characters = charactersData.data.results;
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+    const characters = await response.json();
     if (!characters || characters.length === 0) throw new Error('No characters found.');
 
-    //container for the title and characters list
     charactersList.innerHTML = `
       <div class="characters-container">
-        <h1>meet the characters:</h1>
+        <h1>Meet the Characters:</h1>
         <ul id="character-items"></ul>
       </div>
     `;
@@ -100,10 +136,9 @@ async function fetchCharacters(charactersUrl) {
 
     lazyLoadImages();
   } catch (error) {
-    console.error('Error fetching characters:', error);
+    handleError(error);
   }
 }
-
 
 function lazyLoadImages() {
   const lazyImages = document.querySelectorAll('.lazy-image');
@@ -123,5 +158,4 @@ function lazyLoadImages() {
 }
 
 document.getElementById('btn').addEventListener('click', fetchRandomStory);
-
 window.addEventListener('DOMContentLoaded', fetchRandomStory);

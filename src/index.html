@@ -8,7 +8,6 @@
   <title>Spider-Stories</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -20,16 +19,18 @@
     </header>
 
     <section aria-labelledby="story-title">
-      <p id="page-bio"> Discover a collection of Spider-Man stories from the Marvel catalog, powered by the Marvel API. Start exploring now!</p>
-      <button id="btn" aria-label="discover random Spider-Man stories">Go!</button>
+      <p id="page-bio">Discover a collection of Spider-Man stories from the Marvel catalog, powered by the Marvel API. Start exploring now!</p>
+      <button id="btn" aria-label="Discover a random Spider-Man story">Go!</button>
     </section>
+
+    <!-- Error message container -->
+    <div id="error-message" role="alert" aria-live="polite"></div>
 
     <div id="loading">
       <div class="spinner"></div>
     </div>
 
-    <section id="story-description" aria-labelledby="about-story">
-    </section>
+    <section id="story-description" aria-labelledby="about-story"></section>
 
     <section aria-labelledby="characters-title">
       <ul id="characters-list"></ul>
